@@ -3,9 +3,11 @@ import { Navigate, Route, Routes, useRoutes } from "react-router-dom";
 import routes from "tempo-routes";
 import LoginForm from "./components/auth/LoginForm";
 import SignUpForm from "./components/auth/SignUpForm";
+import MemberLoginForm from "./components/auth/MemberLoginForm";
 import Dashboard from "./components/pages/dashboard";
 import Success from "./components/pages/success";
 import Home from "./components/pages/home";
+import MemberDashboard from "./components/member/MemberDashboard";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import { Toaster } from "./components/ui/toaster";
 import { LoadingScreen, LoadingSpinner } from "./components/ui/loading-spinner";
@@ -31,6 +33,7 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/signup" element={<SignUpForm />} />
+        <Route path="/memberlogin" element={<MemberLoginForm />} />
         <Route
           path="/dashboard"
           element={
@@ -40,11 +43,14 @@ function AppRoutes() {
           }
         />
         <Route
-          path="/success"
+          path="/member"
           element={
-            <Success />
+            <PrivateRoute>
+              <MemberDashboard />
+            </PrivateRoute>
           }
         />
+        <Route path="/success" element={<Success />} />
       </Routes>
       {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
     </>

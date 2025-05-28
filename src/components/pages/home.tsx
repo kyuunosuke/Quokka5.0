@@ -78,7 +78,7 @@ export default function LandingPage() {
               </div>
             ) : (
               <>
-                <Link to="/login">
+                <Link to="/memberlogin">
                   <Button
                     variant="ghost"
                     className="text-sm font-light hover:text-gray-500"
