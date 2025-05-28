@@ -93,9 +93,10 @@ export type Database = {
           category: string
           created_at: string | null
           current_participants: number | null
-          deadline: string
+          deadline: string | null
           description: string | null
           difficulty_level: string | null
+          end_date: string | null
           entry_fee: number | null
           external_url: string | null
           id: string
@@ -104,6 +105,7 @@ export type Database = {
           organizer_name: string | null
           prize_description: string | null
           prize_value: number
+          start_date: string | null
           status: string | null
           thumbnail_url: string | null
           title: string
@@ -113,9 +115,10 @@ export type Database = {
           category: string
           created_at?: string | null
           current_participants?: number | null
-          deadline: string
+          deadline?: string | null
           description?: string | null
           difficulty_level?: string | null
+          end_date?: string | null
           entry_fee?: number | null
           external_url?: string | null
           id?: string
@@ -124,6 +127,7 @@ export type Database = {
           organizer_name?: string | null
           prize_description?: string | null
           prize_value: number
+          start_date?: string | null
           status?: string | null
           thumbnail_url?: string | null
           title: string
@@ -133,9 +137,10 @@ export type Database = {
           category?: string
           created_at?: string | null
           current_participants?: number | null
-          deadline?: string
+          deadline?: string | null
           description?: string | null
           difficulty_level?: string | null
+          end_date?: string | null
           entry_fee?: number | null
           external_url?: string | null
           id?: string
@@ -144,6 +149,7 @@ export type Database = {
           organizer_name?: string | null
           prize_description?: string | null
           prize_value?: number
+          start_date?: string | null
           status?: string | null
           thumbnail_url?: string | null
           title?: string
