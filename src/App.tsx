@@ -36,7 +36,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return <Navigate to="/adminlogin" />;
+    return <Navigate to="/admin/login" />;
   }
 
   return <>{children}</>;
@@ -58,7 +58,7 @@ function AppRoutes() {
           }
         />
         <Route path="/success" element={<Success />} />
-        <Route path="/adminlogin" element={<AdminLogin />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/signup" element={<AdminSignUp />} />
         <Route
           path="/admin/forgot-password"

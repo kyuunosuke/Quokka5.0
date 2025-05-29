@@ -36,7 +36,7 @@ export default function AdminSignUp() {
         description: "Please check your email to verify your account.",
         duration: 5000,
       });
-      navigate("/adminlogin");
+      navigate("/admin/login");
     } catch (error: any) {
       setError("Error creating account. Please try again.");
       toast({
@@ -54,7 +54,7 @@ export default function AdminSignUp() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <Link
-            to="/adminlogin"
+            to="/admin/login"
             className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-6"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -161,7 +161,7 @@ export default function AdminSignUp() {
             <div className="text-sm text-center text-gray-600 mt-6">
               Already have an account?{" "}
               <Link
-                to="/adminlogin"
+                to="/admin/login"
                 className="text-blue-600 hover:underline font-medium"
               >
                 Sign in

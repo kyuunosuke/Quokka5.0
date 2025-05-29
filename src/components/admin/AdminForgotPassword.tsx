@@ -58,7 +58,7 @@ export default function AdminForgotPassword() {
               >
                 Send another link
               </Button>
-              <Link to="/adminlogin">
+              <Link to="/admin/login">
                 <Button
                   variant="ghost"
                   className="w-full text-gray-600 hover:text-gray-800"
@@ -78,7 +78,7 @@ export default function AdminForgotPassword() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <Link
-            to="/adminlogin"
+            to="/admin/login"
             className="inline-flex items-center text-gray-600 hover:text-gray-800 mb-6"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -123,7 +123,7 @@ export default function AdminForgotPassword() {
             <div className="text-sm text-center text-gray-600 mt-6">
               Remember your password?{" "}
               <Link
-                to="/adminlogin"
+                to="/admin/login"
                 className="text-blue-600 hover:underline font-medium"
               >
                 Sign in
