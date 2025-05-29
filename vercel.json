@@ -1,0 +1,14 @@
+{
+  "routes": [
+    {
+      "src": "/home/(.*)",
+      "dest": "/home/index.html"
+    },
+    {
+      "src": "/home",
+      "dest": "/home/index.html"
+    }
+  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
+}
