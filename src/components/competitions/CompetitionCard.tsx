@@ -199,7 +199,7 @@ export default function CompetitionCard({
           </div>
 
           <div className="mt-4 relative z-10">
-            <div className="flex gap-2">
+            <div className="flex gap-2 mb-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -226,6 +226,20 @@ export default function CompetitionCard({
                 </Button>
               )}
             </div>
+            {external_url && (
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full neumorphic-button flex items-center justify-center gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(external_url, "_blank");
+                }}
+              >
+                <ExternalLink className="h-4 w-4" />
+                Enter Competition
+              </Button>
+            )}
           </div>
         </div>
       </DrawerTrigger>

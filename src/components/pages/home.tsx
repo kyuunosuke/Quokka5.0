@@ -23,8 +23,12 @@ export default function LandingPage() {
       <header className="fixed top-0 z-50 w-full bg-[rgba(240,240,243,0.8)] backdrop-blur-md border-b border-[#e6e6e9]/30">
         <div className="max-w-[1200px] mx-auto flex h-12 items-center justify-between px-4">
           <div className="flex items-center">
-            <Link to="/" className="font-medium text-xl">
-              Competition Directory
+            <Link to="/" className="flex items-center">
+              <img
+                src="/quokkamole-logo.png"
+                alt="Quokkamole Competition Directory"
+                className="h-8"
+              />
             </Link>
           </div>
           <div className="flex items-center space-x-4">
@@ -78,7 +82,7 @@ export default function LandingPage() {
               </div>
             ) : (
               <>
-                <Link to="/login">
+                <Link to="/dashboard">
                   <Button
                     variant="ghost"
                     className="text-sm font-light hover:text-gray-500"
@@ -96,13 +100,12 @@ export default function LandingPage() {
           </div>
         </div>
       </header>
-
       <main className="pt-12">
         {/* Hero section */}
         <section className="py-20 text-center">
           <div className="max-w-[1200px] mx-auto px-4">
             <h2 className="text-5xl font-semibold tracking-tight mb-1">
-              Competition Directory
+              Quokkamole
             </h2>
             <h3 className="text-2xl font-medium text-gray-600 mb-6">
               Discover and participate in exciting competitions
@@ -247,7 +250,6 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-
       {/* Footer */}
       <footer className="bg-[#e8e8ec] py-12 text-sm text-gray-600">
         <div className="max-w-[1200px] mx-auto px-4">
