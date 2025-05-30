@@ -5,18 +5,39 @@ import CompetitionForm from "./CompetitionForm";
 import { CompetitionProps } from "../competitions/CompetitionCard";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 type ViewMode = "grid" | "add" | "edit" | "view";
+type DisplayMode = "grid" | "list";
 
-export default function AdminDashboard() {
+interface AdminDashboardProps {
+  viewMode?: "active" | "archived";
+}
+
+export default function AdminDashboard({
+  viewMode: initialViewMode = "active",
+}: AdminDashboardProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedCompetition, setSelectedCompetition] =
     useState<CompetitionProps | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState(
+    initialViewMode === "archived" ? "archived" : "all",
+  );
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [currentSection, setCurrentSection] = useState<"active" | "archived">(
+    initialViewMode,
+  );
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("grid");
+
+  useEffect(() => {
+    const isArchivedRoute = location.pathname === "/admin/archived";
+    setCurrentSection(isArchivedRoute ? "archived" : "active");
+    setStatusFilter(isArchivedRoute ? "archived" : "all");
+    setRefreshTrigger((prev) => prev + 1);
+  }, [location.pathname]);
 
   const handleAddNew = () => {
     setSelectedCompetition(null);
@@ -50,6 +71,10 @@ export default function AdminDashboard() {
 
   const handleFilterChange = (filter: string) => {
     setStatusFilter(filter);
+  };
+
+  const handleViewChange = (view: "grid" | "list") => {
+    setDisplayMode(view);
   };
 
   const renderContent = () => {
@@ -103,19 +128,25 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between p-6 pb-0">
               <div>
                 <h1 className="text-3xl font-semibold mb-2">
-                  Competition Management
+                  {currentSection === "archived"
+                    ? "Archived Competitions"
+                    : "Competition Management"}
                 </h1>
                 <p className="text-gray-600">
-                  Manage all competitions from this dashboard
+                  {currentSection === "archived"
+                    ? "View and manage archived competitions"
+                    : "Manage all competitions from this dashboard"}
                 </p>
               </div>
-              <Button
-                onClick={handleAddNew}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Competition
-              </Button>
+              {currentSection === "active" && (
+                <Button
+                  onClick={handleAddNew}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Competition
+                </Button>
+              )}
             </div>
             <AdminCompetitionGrid
               searchQuery={searchQuery}
@@ -123,6 +154,7 @@ export default function AdminDashboard() {
               onEdit={handleEdit}
               onView={handleView}
               refreshTrigger={refreshTrigger}
+              displayMode={displayMode}
             />
           </div>
         );
@@ -130,7 +162,12 @@ export default function AdminDashboard() {
   };
 
   return (
-    <AdminLayout onSearch={handleSearch} onFilterChange={handleFilterChange}>
+    <AdminLayout
+      onSearch={handleSearch}
+      onFilterChange={handleFilterChange}
+      onViewChange={handleViewChange}
+      currentView={displayMode}
+    >
       {renderContent()}
     </AdminLayout>
   );

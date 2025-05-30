@@ -19,20 +19,27 @@ import {
   Archive,
   Filter,
   Search,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface AdminLayoutProps {
   children: ReactNode;
   onSearch?: (query: string) => void;
   onFilterChange?: (filter: string) => void;
+  onViewChange?: (view: "grid" | "list") => void;
+  currentView?: "grid" | "list";
 }
 
 export default function AdminLayout({
   children,
   onSearch,
   onFilterChange,
+  onViewChange,
+  currentView = "grid",
 }: AdminLayoutProps) {
   const { user, signOut } = useAuth();
   const location = useLocation();
@@ -43,12 +50,6 @@ export default function AdminLayout({
       href: "/admin",
       icon: <Trophy className="h-4 w-4" />,
       active: location.pathname === "/admin",
-    },
-    {
-      label: "Add Competition",
-      href: "/admin/add",
-      icon: <Plus className="h-4 w-4" />,
-      active: location.pathname === "/admin/add",
     },
     {
       label: "Archived",
@@ -64,6 +65,9 @@ export default function AdminLayout({
     { label: "Upcoming", value: "upcoming" },
     { label: "Past", value: "past" },
     { label: "Draft", value: "draft" },
+    ...(location.pathname === "/admin/archived"
+      ? [{ label: "Archived", value: "archived" }]
+      : []),
   ];
 
   return (
@@ -83,6 +87,22 @@ export default function AdminLayout({
                 onChange={(e) => onSearch?.(e.target.value)}
               />
             </div>
+            <ToggleGroup
+              type="single"
+              value={currentView}
+              onValueChange={(value) => {
+                if (value && onViewChange)
+                  onViewChange(value as "grid" | "list");
+              }}
+              className="border rounded-md bg-white"
+            >
+              <ToggleGroupItem value="grid" aria-label="Grid View">
+                <LayoutGrid className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="List View">
+                <List className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
 
           <div className="flex items-center gap-4">

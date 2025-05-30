@@ -72,6 +72,14 @@ function AppRoutes() {
             </AdminRoute>
           }
         />
+        <Route
+          path="/admin/archived"
+          element={
+            <AdminRoute>
+              <AdminDashboard viewMode="archived" />
+            </AdminRoute>
+          }
+        />
       </Routes>
       {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
     </>

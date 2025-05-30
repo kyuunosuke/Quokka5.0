@@ -70,6 +70,7 @@ export default function CompetitionForm({
     organizer_name: competition?.organizer_name || "",
     organizer_email: competition?.organizer_email || "",
     thumbnail_url: competition?.thumbnail_url || "",
+    external_image_url: "",
     status: "active",
   });
 
@@ -138,34 +139,75 @@ export default function CompetitionForm({
 
     setImageUploading(true);
     try {
+      // Check file size (limit to 3MB)
+      if (file.size > 3 * 1024 * 1024) {
+        throw new Error("File size exceeds 3MB limit");
+      }
+
       const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
       const filePath = `competition-thumbnails/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      // Check if bucket exists first
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(
+        (bucket) => bucket.name === "competition-images",
+      );
+
+      if (!bucketExists) {
+        throw new Error(
+          "Storage bucket 'competition-images' not found. Please contact an administrator.",
+        );
+      }
+
+      const { error: uploadError, data } = await supabase.storage
         .from("competition-images")
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
 
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage
+      if (!data) throw new Error("Upload failed - no data returned");
+
+      const { data: urlData } = supabase.storage
         .from("competition-images")
         .getPublicUrl(filePath);
 
-      setFormData((prev) => ({ ...prev, thumbnail_url: data.publicUrl }));
+      if (!urlData || !urlData.publicUrl)
+        throw new Error("Failed to get public URL");
+
+      setFormData((prev) => ({
+        ...prev,
+        thumbnail_url: urlData.publicUrl,
+        external_image_url: "",
+      }));
 
       toast({
         title: "Image uploaded successfully",
         description: "Competition thumbnail has been uploaded.",
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Upload error:", error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload image. Please try again.",
+        description:
+          error.message || "Failed to upload image. Please try again.",
         variant: "destructive",
       });
     } finally {
       setImageUploading(false);
+    }
+  };
+
+  const handleExternalImageUrl = (url: string) => {
+    if (url) {
+      setFormData((prev) => ({
+        ...prev,
+        thumbnail_url: url,
+        external_image_url: url,
+      }));
     }
   };
 
@@ -646,8 +688,12 @@ export default function CompetitionForm({
             <CardTitle>Competition Image</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* File Upload Option */}
+              <div>
+                <h4 className="text-sm font-medium mb-2">
+                  Option 1: Upload Image
+                </h4>
                 <Label htmlFor="image-upload" className="cursor-pointer">
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
                     <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
@@ -656,6 +702,7 @@ export default function CompetitionForm({
                         ? "Uploading..."
                         : "Click to upload competition image"}
                     </p>
+                    <p className="text-xs text-gray-500 mt-1">Max size: 3MB</p>
                   </div>
                   <Input
                     id="image-upload"
@@ -667,16 +714,59 @@ export default function CompetitionForm({
                   />
                 </Label>
               </div>
-              {formData.thumbnail_url && (
-                <div className="w-32 h-32">
+
+              {/* External URL Option */}
+              <div>
+                <h4 className="text-sm font-medium mb-2">
+                  Option 2: External Image URL
+                </h4>
+                <div className="space-y-2">
+                  <Input
+                    type="url"
+                    placeholder="https://example.com/image.jpg"
+                    value={formData.external_image_url}
+                    onChange={(e) => {
+                      const url = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        external_image_url: url,
+                      }));
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      handleExternalImageUrl(formData.external_image_url)
+                    }
+                    disabled={!formData.external_image_url}
+                    className="w-full"
+                  >
+                    Use External Image
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Preview */}
+            {formData.thumbnail_url && (
+              <div className="mt-4 flex flex-col items-center">
+                <h4 className="text-sm font-medium mb-2">Image Preview</h4>
+                <div className="w-48 h-48 border rounded-lg overflow-hidden">
                   <img
                     src={formData.thumbnail_url}
                     alt="Competition thumbnail"
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src =
+                        "https://placehold.co/400x400?text=Invalid+Image";
+                    }}
                   />
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
