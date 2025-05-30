@@ -31,7 +31,8 @@ function AppRoutes() {
     <>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<LoginForm />} />
+        <Route path="/login" element={<Navigate to="/memberlogin" />} />
+        <Route path="/memberlogin" element={<MemberLoginForm />} />
         <Route path="/signup" element={<SignUpForm />} />
         <Route path="/memberlogin" element={<MemberLoginForm />} />
         <Route

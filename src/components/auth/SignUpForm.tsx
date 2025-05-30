@@ -25,7 +25,7 @@ export default function SignUpForm() {
         description: "Please check your email to verify your account.",
         duration: 5000,
       });
-      navigate("/login");
+      navigate("/memberlogin");
     } catch (error) {
       setError("Error creating account");
     }
@@ -36,7 +36,12 @@ export default function SignUpForm() {
       <div className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-md mx-auto">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Full Name</Label>
+            <Label
+              htmlFor="fullName"
+              className="text-sm font-medium text-gray-700"
+            >
+              Full Name
+            </Label>
             <Input
               id="fullName"
               placeholder="John Doe"
@@ -47,7 +52,12 @@ export default function SignUpForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium text-gray-700"
+            >
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -59,7 +69,12 @@ export default function SignUpForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
+            <Label
+              htmlFor="password"
+              className="text-sm font-medium text-gray-700"
+            >
+              Password
+            </Label>
             <Input
               id="password"
               type="password"
@@ -69,18 +84,19 @@ export default function SignUpForm() {
               required
               className="h-12 rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500"
             />
-            <p className="text-xs text-gray-500 mt-1">Password must be at least 8 characters</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Password must be at least 8 characters
+            </p>
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          
-          <Button 
-            type="submit" 
+
+          <Button
+            type="submit"
             className="w-full h-12 rounded-full bg-black text-white hover:bg-gray-800 text-sm font-medium"
           >
             Create account
           </Button>
-          
-          
+
           <div className="text-xs text-center text-gray-500 mt-6">
             By creating an account, you agree to our{" "}
             <Link to="/" className="text-blue-600 hover:underline">
@@ -91,10 +107,13 @@ export default function SignUpForm() {
               Privacy Policy
             </Link>
           </div>
-          
+
           <div className="text-sm text-center text-gray-600 mt-6">
             Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 hover:underline font-medium">
+            <Link
+              to="/memberlogin"
+              className="text-blue-600 hover:underline font-medium"
+            >
               Sign in
             </Link>
           </div>

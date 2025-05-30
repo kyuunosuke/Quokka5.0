@@ -150,7 +150,7 @@ export default function Header({
               <div className="flex items-center gap-3">
                 <Link to="/memberlogin">
                   <Button variant="ghost" className="font-medium">
-                    Sign In
+                    Member Login
                   </Button>
                 </Link>
                 <Link to="/signup">
