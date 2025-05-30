@@ -62,10 +62,6 @@ export default function UserProfileCard({
             <h3 className="text-xl font-semibold text-gray-900">
               {displayName}
             </h3>
-            <div className="flex items-center gap-1 text-gray-600 mt-1">
-              <Mail className="h-4 w-4" />
-              <span className="text-sm">{email}</span>
-            </div>
           </div>
         </div>
 

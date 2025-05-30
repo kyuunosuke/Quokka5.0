@@ -1,12 +1,27 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../supabase/auth";
 import { supabase } from "../../../supabase/supabase";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import { LoadingScreen } from "../ui/loading-spinner";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
+import UserProfileCard from "./UserProfileCard";
+import GamificationPanel from "./GamificationPanel";
+import CompetitionHistory from "./CompetitionHistory";
+import {
+  Trophy,
+  Calendar,
+  Clock,
+  Heart,
+  Users,
+  ExternalLink,
+  User,
+  Settings,
+  LogOut,
+  Home,
+} from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,23 +30,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import UserProfileCard from "./UserProfileCard";
-import GamificationPanel from "./GamificationPanel";
-import CompetitionHistory from "./CompetitionHistory";
 import {
-  LogOut,
-  Home,
-  Settings,
-  MessageCircle,
-  User,
-  Bell,
-  Trophy,
-  Calendar,
-  Clock,
-  Heart,
-  Users,
-  ExternalLink,
-} from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Database } from "../../types/supabase";
 
 type Competition = Database["public"]["Tables"]["competitions"]["Row"];
@@ -42,10 +52,18 @@ interface CompetitionWithSaved extends Competition {
   is_saved?: boolean;
 }
 
+// Helper function to get initials from name
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+};
+
 export default function MemberDashboard() {
   const { user, loading, signOut } = useAuth();
   const [profile, setProfile] = useState(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
   const [pastCompetitions, setPastCompetitions] = useState<Competition[]>([]);
   const [currentCompetitions, setCurrentCompetitions] = useState<
     CompetitionWithSaved[]
@@ -53,33 +71,62 @@ export default function MemberDashboard() {
   const [savedCompetitions, setSavedCompetitions] = useState<
     CompetitionWithSaved[]
   >([]);
-  const [loadingCompetitions, setLoadingCompetitions] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
   const [competitionError, setCompetitionError] = useState<string | null>(null);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    fullName: "",
+    email: "",
+    bio: "",
+    location: "",
+    website: "",
+  });
+  const [profileLoading, setProfileLoading] = useState(false);
 
+  // Get display name from user metadata or email
+  const displayName =
+    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+
+  // Initialize profile form when user data is available
   useEffect(() => {
-    if (user) {
-      fetchCompetitionData();
-      // Simulate loading profile data
-      const timer = setTimeout(() => {
-        setProfile({
-          full_name: user?.user_metadata?.full_name || "Member",
-          avatar_url: user?.user_metadata?.avatar_url,
-          total_xp: 1250,
-          level: 5,
-          member_since: user?.created_at,
-        });
-        setLoadingProfile(false);
-      }, 1000);
-
-      return () => clearTimeout(timer);
+    if (user && !profileForm.fullName) {
+      setProfileForm({
+        fullName: user?.user_metadata?.full_name || "",
+        email: user?.email || "",
+        bio: user?.user_metadata?.bio || "",
+        location: user?.user_metadata?.location || "",
+        website: user?.user_metadata?.website || "",
+      });
     }
   }, [user]);
 
+  useEffect(() => {
+    if (user) {
+      // Set profile data immediately
+      setProfile({
+        full_name: user?.user_metadata?.full_name || "Member",
+        avatar_url: user?.user_metadata?.avatar_url,
+        total_xp: 1250,
+        level: 5,
+        member_since: user?.created_at,
+      });
+
+      fetchCompetitionData();
+    } else if (!loading) {
+      // Only set loading to false if auth is not loading
+      setLoadingData(false);
+    }
+  }, [user, loading]);
+
   const fetchCompetitionData = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoadingData(false);
+      return;
+    }
 
     try {
-      setLoadingCompetitions(true);
+      setLoadingData(true);
       setCompetitionError(null);
 
       // Fetch all competitions
@@ -88,7 +135,11 @@ export default function MemberDashboard() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (competitionsError) throw competitionsError;
+      if (competitionsError) {
+        setCompetitionError(competitionsError.message);
+        setLoadingData(false);
+        return;
+      }
 
       // Fetch user's saved competitions
       const { data: savedCompetitionsData, error: savedError } = await supabase
@@ -96,7 +147,11 @@ export default function MemberDashboard() {
         .select("competition_id")
         .eq("user_id", user.id);
 
-      if (savedError) throw savedError;
+      if (savedError) {
+        setCompetitionError(savedError.message);
+        setLoadingData(false);
+        return;
+      }
 
       const savedCompetitionIds = new Set(
         savedCompetitionsData?.map((sc) => sc.competition_id) || [],
@@ -131,7 +186,7 @@ export default function MemberDashboard() {
       console.error("Error fetching competition data:", error);
       setCompetitionError("Failed to load competition data");
     } finally {
-      setLoadingCompetitions(false);
+      setLoadingData(false);
     }
   };
 
@@ -162,27 +217,41 @@ export default function MemberDashboard() {
     }
   };
 
-  const handleSignOut = async () => {
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setProfileLoading(true);
     try {
-      await signOut();
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          full_name: profileForm.fullName,
+          bio: profileForm.bio,
+          location: profileForm.location,
+          website: profileForm.website,
+        },
+      });
+
+      if (error) throw error;
+
+      setShowProfileDialog(false);
+      // You could add a toast notification here for success
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error("Error updating profile:", error);
+      // You could add error handling/toast here
+    } finally {
+      setProfileLoading(false);
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+  const handleProfileInputChange = (field: string, value: string) => {
+    setProfileForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  const displayName =
-    profile?.full_name || user?.user_metadata?.full_name || "Member";
-  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url;
-
-  if (loading || loadingProfile || loadingCompetitions) {
+  if (loading || loadingData) {
     return <LoadingScreen text="Loading member dashboard..." />;
   }
 
@@ -193,26 +262,26 @@ export default function MemberDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <Home className="h-6 w-6 text-blue-600" />
-              <h1 className="text-xl font-semibold text-gray-900">
-                Member Dashboard
-              </h1>
-            </div>
-
+            {/* Logo and Title */}
             <div className="flex items-center gap-4">
-              {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5 text-gray-600" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                  3
-                </span>
-              </Button>
-
-              {/* User Avatar Dropdown */}
+              <div className="w-10 rounded-xl flex items-center justify-center h-[20]">
+                <Link to="/home">
+                  <img
+                    src="/quokkamole-new-logo.png"
+                    alt="Quokkamole Logo"
+                    className="h-10 w-10 object-contain cursor-pointer"
+                  />
+                </Link>
+              </div>
+              <span className="text-xl font-semibold text-gray-900">
+                QuokkaMole
+              </span>
+            </div>
+            {/* User Profile */}
+            <div className="flex items-center gap-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -221,10 +290,7 @@ export default function MemberDashboard() {
                   >
                     <Avatar className="h-10 w-10">
                       <AvatarImage
-                        src={
-                          avatarUrl ||
-                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`
-                        }
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`}
                         alt={displayName}
                       />
                       <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
@@ -242,33 +308,27 @@ export default function MemberDashboard() {
                       <p className="text-xs leading-none text-muted-foreground">
                         {user?.email}
                       </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
-                          Level {profile?.level || 5}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {profile?.total_xp || 1250} XP
-                        </span>
-                      </div>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => setShowProfileDialog(true)}
+                  >
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => setShowSettingsDialog(true)}
+                  >
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    <span>Support & Messages</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer text-red-600 focus:text-red-600"
-                    onClick={handleSignOut}
+                    onClick={signOut}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Sign Out</span>
@@ -279,12 +339,17 @@ export default function MemberDashboard() {
           </div>
         </div>
       </header>
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar - Past Competitions */}
+          {/* Left Sidebar - Profile and Competitions */}
           <div className="lg:col-span-1">
+            {/* Profile Card - Moved to top */}
+            <div className="mb-6">
+              <UserProfileCard user={user} profile={profile} />
+            </div>
+
+            {/* Past Competitions */}
             <Card className="bg-white">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg">
@@ -330,11 +395,6 @@ export default function MemberDashboard() {
               </CardContent>
             </Card>
 
-            {/* Profile Card */}
-            <div className="mt-6">
-              <UserProfileCard user={user} profile={profile} />
-            </div>
-
             {/* Gamification Panel */}
             <div className="mt-6">
               <GamificationPanel
@@ -345,217 +405,385 @@ export default function MemberDashboard() {
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-3 space-y-8">
-            {/* Current Competitions */}
+          <div className="lg:col-span-3">
+            {/* Competitions Tabs */}
             <Card className="bg-white">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                  Current Competitions
+                  <Trophy className="h-5 w-5 text-purple-600" />
+                  My Competitions
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {currentCompetitions.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
-                    No current competitions
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {currentCompetitions.map((competition) => (
-                      <div
-                        key={competition.id}
-                        className="border rounded-lg p-4 hover:shadow-md transition-all"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 mb-1">
-                              {competition.title}
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                              {competition.description}
-                            </p>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              handleSaveCompetition(
-                                competition.id,
-                                competition.is_saved || false,
-                              )
-                            }
-                            className="p-1"
+                <Tabs defaultValue="participated" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger
+                      value="participated"
+                      className="flex items-center gap-2"
+                    >
+                      <Clock className="h-4 w-4" />
+                      Participated
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="saved"
+                      className="flex items-center gap-2"
+                    >
+                      <Heart className="h-4 w-4" />
+                      Saved
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="participated" className="mt-6">
+                    {currentCompetitions.length === 0 ? (
+                      <p className="text-gray-500 text-center py-8">
+                        No participated competitions
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {currentCompetitions.map((competition) => (
+                          <div
+                            key={competition.id}
+                            className="border rounded-lg p-4 hover:shadow-md transition-all"
                           >
-                            <Heart
-                              className={`h-4 w-4 ${
-                                competition.is_saved
-                                  ? "fill-red-500 text-red-500"
-                                  : "text-gray-400"
-                              }`}
-                            />
-                          </Button>
-                        </div>
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900 mb-1">
+                                  {competition.title}
+                                </h4>
+                                <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                                  {competition.description}
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  handleSaveCompetition(
+                                    competition.id,
+                                    competition.is_saved || false,
+                                  )
+                                }
+                                className="p-1"
+                              >
+                                <Heart
+                                  className={`h-4 w-4 ${
+                                    competition.is_saved
+                                      ? "fill-red-500 text-red-500"
+                                      : "text-gray-400"
+                                  }`}
+                                />
+                              </Button>
+                            </div>
 
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <Calendar className="h-4 w-4" />
-                            <span>
-                              Deadline:{" "}
-                              {new Date(
-                                competition.deadline,
-                              ).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <Trophy className="h-4 w-4" />
-                            <span>
-                              ${competition.prize_value.toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <Users className="h-4 w-4" />
-                            <span>
-                              {competition.current_participants || 0}{" "}
-                              participants
-                            </span>
-                          </div>
-                        </div>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Calendar className="h-4 w-4" />
+                                <span>
+                                  Deadline:{" "}
+                                  {new Date(
+                                    competition.deadline,
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Trophy className="h-4 w-4" />
+                                <span>
+                                  ${competition.prize_value.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Users className="h-4 w-4" />
+                                <span>
+                                  {competition.current_participants || 0}{" "}
+                                  participants
+                                </span>
+                              </div>
+                            </div>
 
-                        <div className="flex gap-2 mt-4">
-                          <Badge className="bg-blue-100 text-blue-800">
-                            {competition.category}
-                          </Badge>
-                          <Badge className="bg-green-100 text-green-800">
-                            {competition.difficulty_level}
-                          </Badge>
-                        </div>
+                            <div className="flex gap-2 mt-4">
+                              <Badge className="bg-blue-100 text-blue-800">
+                                {competition.category}
+                              </Badge>
+                              <Badge className="bg-green-100 text-green-800">
+                                {competition.difficulty_level}
+                              </Badge>
+                            </div>
 
-                        {competition.external_url && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full mt-3"
-                            onClick={() =>
-                              window.open(competition.external_url!, "_blank")
-                            }
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Enter Competition
-                          </Button>
-                        )}
+                            {competition.external_url && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full mt-3"
+                                onClick={() =>
+                                  window.open(
+                                    competition.external_url!,
+                                    "_blank",
+                                  )
+                                }
+                              >
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                Enter Competition
+                              </Button>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    )}
+                  </TabsContent>
 
-            {/* Saved Competitions */}
-            <Card className="bg-white">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3">
-                  <Heart className="h-5 w-5 text-red-600" />
-                  Saved Competitions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {savedCompetitions.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
-                    No saved competitions
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {savedCompetitions.map((competition) => (
-                      <div
-                        key={competition.id}
-                        className="border rounded-lg p-4 hover:shadow-md transition-all"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 mb-1">
-                              {competition.title}
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                              {competition.description}
-                            </p>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              handleSaveCompetition(competition.id, true)
-                            }
-                            className="p-1"
+                  <TabsContent value="saved" className="mt-6">
+                    {savedCompetitions.length === 0 ? (
+                      <p className="text-gray-500 text-center py-8">
+                        No saved competitions
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {savedCompetitions.map((competition) => (
+                          <div
+                            key={competition.id}
+                            className="border rounded-lg p-4 hover:shadow-md transition-all"
                           >
-                            <Heart className="h-4 w-4 fill-red-500 text-red-500" />
-                          </Button>
-                        </div>
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900 mb-1">
+                                  {competition.title}
+                                </h4>
+                                <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                                  {competition.description}
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  handleSaveCompetition(competition.id, true)
+                                }
+                                className="p-1"
+                              >
+                                <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                              </Button>
+                            </div>
 
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <Calendar className="h-4 w-4" />
-                            <span>
-                              Deadline:{" "}
-                              {new Date(
-                                competition.deadline,
-                              ).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <Trophy className="h-4 w-4" />
-                            <span>
-                              ${competition.prize_value.toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-gray-600">
-                            <Users className="h-4 w-4" />
-                            <span>
-                              {competition.current_participants || 0}{" "}
-                              participants
-                            </span>
-                          </div>
-                        </div>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Calendar className="h-4 w-4" />
+                                <span>
+                                  Deadline:{" "}
+                                  {new Date(
+                                    competition.deadline,
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Trophy className="h-4 w-4" />
+                                <span>
+                                  ${competition.prize_value.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-gray-600">
+                                <Users className="h-4 w-4" />
+                                <span>
+                                  {competition.current_participants || 0}{" "}
+                                  participants
+                                </span>
+                              </div>
+                            </div>
 
-                        <div className="flex gap-2 mt-4">
-                          <Badge className="bg-blue-100 text-blue-800">
-                            {competition.category}
-                          </Badge>
-                          <Badge
-                            className={
-                              new Date(competition.deadline) < new Date()
-                                ? "bg-gray-100 text-gray-800"
-                                : "bg-green-100 text-green-800"
-                            }
-                          >
-                            {new Date(competition.deadline) < new Date()
-                              ? "Ended"
-                              : competition.difficulty_level}
-                          </Badge>
-                        </div>
+                            <div className="flex gap-2 mt-4">
+                              <Badge className="bg-blue-100 text-blue-800">
+                                {competition.category}
+                              </Badge>
+                              <Badge
+                                className={
+                                  new Date(competition.deadline) < new Date()
+                                    ? "bg-gray-100 text-gray-800"
+                                    : "bg-green-100 text-green-800"
+                                }
+                              >
+                                {new Date(competition.deadline) < new Date()
+                                  ? "Ended"
+                                  : competition.difficulty_level}
+                              </Badge>
+                            </div>
 
-                        {competition.external_url &&
-                          new Date(competition.deadline) > new Date() && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full mt-3"
-                              onClick={() =>
-                                window.open(competition.external_url!, "_blank")
-                              }
-                            >
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              Enter Competition
-                            </Button>
-                          )}
+                            {competition.external_url &&
+                              new Date(competition.deadline) > new Date() && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full mt-3"
+                                  onClick={() =>
+                                    window.open(
+                                      competition.external_url!,
+                                      "_blank",
+                                    )
+                                  }
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-2" />
+                                  Enter Competition
+                                </Button>
+                              )}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    )}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>
         </div>
       </main>
+
+      {/* Profile Dialog */}
+      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogDescription>
+              Update your basic profile information
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleProfileSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                value={profileForm.fullName}
+                onChange={(e) =>
+                  handleProfileInputChange("fullName", e.target.value)
+                }
+                placeholder="Enter your full name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={profileForm.email}
+                disabled
+                className="bg-gray-50"
+              />
+              <p className="text-xs text-gray-500">
+                Email cannot be changed here
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea
+                id="bio"
+                value={profileForm.bio}
+                onChange={(e) =>
+                  handleProfileInputChange("bio", e.target.value)
+                }
+                placeholder="Tell us about yourself"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                value={profileForm.location}
+                onChange={(e) =>
+                  handleProfileInputChange("location", e.target.value)
+                }
+                placeholder="City, Country"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="website">Website</Label>
+              <Input
+                id="website"
+                type="url"
+                value={profileForm.website}
+                onChange={(e) =>
+                  handleProfileInputChange("website", e.target.value)
+                }
+                placeholder="https://yourwebsite.com"
+              />
+            </div>
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowProfileDialog(false)}
+                disabled={profileLoading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={profileLoading}>
+                {profileLoading ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Settings Dialog */}
+      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Settings</DialogTitle>
+            <DialogDescription>
+              Manage your account settings and preferences
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium">Account Settings</h4>
+              <div className="space-y-2">
+                <Button variant="outline" className="w-full justify-start">
+                  Change Password
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Email Preferences
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Privacy Settings
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium">Preferences</h4>
+              <div className="space-y-2">
+                <Button variant="outline" className="w-full justify-start">
+                  Notification Settings
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Language & Region
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Theme Preferences
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium">Data & Privacy</h4>
+              <div className="space-y-2">
+                <Button variant="outline" className="w-full justify-start">
+                  Download My Data
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-red-600 hover:text-red-700"
+                >
+                  Delete Account
+                </Button>
+              </div>
+            </div>
+            <div className="flex justify-end pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowSettingsDialog(false)}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
