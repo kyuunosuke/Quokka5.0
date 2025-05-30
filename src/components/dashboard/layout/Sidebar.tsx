@@ -31,6 +31,11 @@ const defaultNavItems: NavItem[] = [
   { icon: <FolderKanban size={20} />, label: "Projects" },
   { icon: <Calendar size={20} />, label: "Calendar" },
   { icon: <Users size={20} />, label: "Team" },
+  {
+    icon: <FolderKanban size={20} />,
+    label: "Random Draw",
+    href: "/randomizer",
+  },
 ];
 
 const defaultBottomItems: NavItem[] = [
@@ -47,9 +52,7 @@ const Sidebar = ({
     <div className="w-[280px] h-full bg-white/80 backdrop-blur-md border-r border-gray-200 flex flex-col">
       <div className="p-6">
         <h2 className="text-xl font-semibold mb-2 text-gray-900">Projects</h2>
-        <p className="text-sm text-gray-500">
-          Manage your projects and tasks
-        </p>
+        <p className="text-sm text-gray-500">Manage your projects and tasks</p>
       </div>
 
       <ScrollArea className="flex-1 px-4">
@@ -58,10 +61,14 @@ const Sidebar = ({
             <Button
               key={item.label}
               variant={"ghost"}
-              className={`w-full justify-start gap-3 h-10 rounded-xl text-sm font-medium ${item.label === activeItem ? 'bg-blue-50 text-blue-600 hover:bg-blue-100' : 'text-gray-700 hover:bg-gray-100'}`}
+              className={`w-full justify-start gap-3 h-10 rounded-xl text-sm font-medium ${item.label === activeItem ? "bg-blue-50 text-blue-600 hover:bg-blue-100" : "text-gray-700 hover:bg-gray-100"}`}
               onClick={() => onItemClick(item.label)}
             >
-              <span className={`${item.label === activeItem ? 'text-blue-600' : 'text-gray-500'}`}>{item.icon}</span>
+              <span
+                className={`${item.label === activeItem ? "text-blue-600" : "text-gray-500"}`}
+              >
+                {item.icon}
+              </span>
               {item.label}
             </Button>
           ))}
@@ -70,16 +77,27 @@ const Sidebar = ({
         <Separator className="my-4 bg-gray-100" />
 
         <div className="space-y-3">
-          <h3 className="text-xs font-medium px-4 py-1 text-gray-500 uppercase tracking-wider">Filters</h3>
-          <Button variant="ghost" className="w-full justify-start gap-3 h-9 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100">
+          <h3 className="text-xs font-medium px-4 py-1 text-gray-500 uppercase tracking-wider">
+            Filters
+          </h3>
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 h-9 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100"
+          >
             <span className="h-2 w-2 rounded-full bg-green-500"></span>
             Active
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3 h-9 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 h-9 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100"
+          >
             <span className="h-2 w-2 rounded-full bg-red-500"></span>
             High Priority
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3 h-9 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 h-9 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100"
+          >
             <span className="h-2 w-2 rounded-full bg-yellow-500"></span>
             In Progress
           </Button>

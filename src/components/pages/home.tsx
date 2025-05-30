@@ -32,6 +32,22 @@ export default function LandingPage() {
             </Link>
           </div>
           <div className="flex items-center space-x-4">
+            <Link to="/randomizer">
+              <Button
+                variant="ghost"
+                className="text-sm font-light hover:text-gray-500"
+              >
+                Random Draw
+              </Button>
+            </Link>
+            <Link to="/randomizer/history">
+              <Button
+                variant="ghost"
+                className="text-sm font-light hover:text-gray-500"
+              >
+                Draw History
+              </Button>
+            </Link>
             {user ? (
               <div className="flex items-center gap-4">
                 <Link to="/dashboard">
@@ -129,7 +145,7 @@ export default function LandingPage() {
         {/* Competition Grid Section */}
         <section className="py-16 bg-[#f0f0f3]">
           <div className="max-w-[1200px] mx-auto px-4">
-            <h2 className="text-4xl font-semibold tracking-tight mb-2 text-center">
+            <h2 className="text-4xl font-semibold tracking-tight mb-2">
               Active Competitions
             </h2>
             <p className="text-xl text-gray-600 mb-12 text-center max-w-2xl mx-auto">

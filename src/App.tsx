@@ -10,6 +10,9 @@ import AdminLogin from "./components/admin/AdminLogin";
 import AdminSignUp from "./components/admin/AdminSignUp";
 import AdminForgotPassword from "./components/admin/AdminForgotPassword";
 import AdminDashboard from "./components/admin/AdminDashboard";
+import RandomizerPage from "./components/randomizer/RandomizerPage";
+import RandomizerHistory from "./components/randomizer/RandomizerHistory";
+import RandomizerResults from "./components/randomizer/RandomizerResults";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import { Toaster } from "./components/ui/toaster";
 import { LoadingScreen, LoadingSpinner } from "./components/ui/loading-spinner";
@@ -58,6 +61,12 @@ function AppRoutes() {
           }
         />
         <Route path="/success" element={<Success />} />
+        <Route path="/randomizer" element={<RandomizerPage />} />
+        <Route path="/randomizer/history" element={<RandomizerHistory />} />
+        <Route
+          path="/randomizer/results/:sessionId"
+          element={<RandomizerResults sessionId="" onNewDraw={() => {}} />}
+        />
         <Route path="/adminlogin" element={<AdminLogin />} />
         <Route path="/admin/signup" element={<AdminSignUp />} />
         <Route

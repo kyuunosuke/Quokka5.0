@@ -51,6 +51,12 @@ export default function AdminLayout({
       active: location.pathname === "/admin/add",
     },
     {
+      label: "Random Draw",
+      href: "/randomizer",
+      icon: <Trophy className="h-4 w-4" />,
+      active: location.pathname === "/randomizer",
+    },
+    {
       label: "Archived",
       href: "/admin/archived",
       icon: <Archive className="h-4 w-4" />,
