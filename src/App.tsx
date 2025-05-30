@@ -14,6 +14,8 @@ import AdminDashboard from "./components/admin/AdminDashboard";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import { Toaster } from "./components/ui/toaster";
 import { LoadingScreen, LoadingSpinner } from "./components/ui/loading-spinner";
+import GuessTheSoundGame from "./tempobook/storyboards/feb638de-05e5-4ab1-8e5e-6607ce1bedf5";
+import CardShuffleGame from "./tempobook/storyboards/775d73ad-9fc6-4ba5-a9ad-316104cf60e9";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -60,6 +62,8 @@ function AppRoutes() {
         />
         <Route path="/success" element={<Success />} />
         <Route path="/games" element={<Games />} />
+        <Route path="/guess-the-sound" element={<GuessTheSoundGame />} />
+        <Route path="/card-shuffle" element={<CardShuffleGame />} />
         <Route path="/adminlogin" element={<AdminLogin />} />
         <Route path="/admin/signup" element={<AdminSignUp />} />
         <Route
