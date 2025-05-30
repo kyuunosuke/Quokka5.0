@@ -10,6 +10,8 @@ import AdminLogin from "./components/admin/AdminLogin";
 import AdminSignUp from "./components/admin/AdminSignUp";
 import AdminForgotPassword from "./components/admin/AdminForgotPassword";
 import AdminDashboard from "./components/admin/AdminDashboard";
+import ClientLogin from "./components/client/ClientLogin";
+import ClientPortal from "./components/client/ClientPortal";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import { Toaster } from "./components/ui/toaster";
 import { LoadingScreen, LoadingSpinner } from "./components/ui/loading-spinner";
@@ -37,6 +39,20 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Navigate to="/adminlogin" />;
+  }
+
+  return <>{children}</>;
+}
+
+function ClientRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen text="Authenticating..." />;
+  }
+
+  if (!user) {
+    return <Navigate to="/clientlogin" />;
   }
 
   return <>{children}</>;
@@ -70,6 +86,15 @@ function AppRoutes() {
             <AdminRoute>
               <AdminDashboard />
             </AdminRoute>
+          }
+        />
+        <Route path="/clientlogin" element={<ClientLogin />} />
+        <Route
+          path="/client"
+          element={
+            <ClientRoute>
+              <ClientPortal />
+            </ClientRoute>
           }
         />
       </Routes>
