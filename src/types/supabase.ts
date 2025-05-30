@@ -157,6 +157,255 @@ export type Database = {
         }
         Relationships: []
       }
+      game_eligibility: {
+        Row: {
+          created_at: string | null
+          game_id: string | null
+          id: string
+          is_mandatory: boolean | null
+          requirement_description: string
+          requirement_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          game_id?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          requirement_description: string
+          requirement_type: string
+        }
+        Update: {
+          created_at?: string | null
+          game_id?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          requirement_description?: string
+          requirement_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_eligibility_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_requirements: {
+        Row: {
+          additional_notes: string | null
+          created_at: string | null
+          equipment_needed: string | null
+          game_id: string | null
+          id: string
+          order_index: number | null
+          requirement_description: string
+          requirement_title: string
+          skill_level_required: string | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          created_at?: string | null
+          equipment_needed?: string | null
+          game_id?: string | null
+          id?: string
+          order_index?: number | null
+          requirement_description: string
+          requirement_title: string
+          skill_level_required?: string | null
+        }
+        Update: {
+          additional_notes?: string | null
+          created_at?: string | null
+          equipment_needed?: string | null
+          game_id?: string | null
+          id?: string
+          order_index?: number | null
+          requirement_description?: string
+          requirement_title?: string
+          skill_level_required?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_requirements_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          difficulty_level: string | null
+          estimated_duration: string | null
+          external_url: string | null
+          game_type: string | null
+          id: string
+          max_players: number | null
+          min_players: number | null
+          organizer_email: string | null
+          organizer_name: string | null
+          status: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          estimated_duration?: string | null
+          external_url?: string | null
+          game_type?: string | null
+          id?: string
+          max_players?: number | null
+          min_players?: number | null
+          organizer_email?: string | null
+          organizer_name?: string | null
+          status?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          estimated_duration?: string | null
+          external_url?: string | null
+          game_type?: string | null
+          id?: string
+          max_players?: number | null
+          min_players?: number | null
+          organizer_email?: string | null
+          organizer_name?: string | null
+          status?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      randomizer_entrants: {
+        Row: {
+          additional_info: Json | null
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string
+          session_id: string | null
+        }
+        Insert: {
+          additional_info?: Json | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          session_id?: string | null
+        }
+        Update: {
+          additional_info?: Json | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "randomizer_entrants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "randomizer_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      randomizer_results: {
+        Row: {
+          created_at: string | null
+          entrant_id: string | null
+          id: string
+          position: number
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          entrant_id?: string | null
+          id?: string
+          position: number
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          entrant_id?: string | null
+          id?: string
+          position?: number
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "randomizer_results_entrant_id_fkey"
+            columns: ["entrant_id"]
+            isOneToOne: false
+            referencedRelation: "randomizer_entrants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "randomizer_results_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "randomizer_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      randomizer_sessions: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          input_hash: string
+          num_winners: number
+          seed: string
+          status: string | null
+          timestamp_proof: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          input_hash: string
+          num_winners?: number
+          seed: string
+          status?: string | null
+          timestamp_proof?: string | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          input_hash?: string
+          num_winners?: number
+          seed?: string
+          status?: string | null
+          timestamp_proof?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       saved_competitions: {
         Row: {
           competition_id: string | null
@@ -182,6 +431,35 @@ export type Database = {
             columns: ["competition_id"]
             isOneToOne: false
             referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_games: {
+        Row: {
+          game_id: string | null
+          id: string
+          saved_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          game_id?: string | null
+          id?: string
+          saved_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          game_id?: string | null
+          id?: string
+          saved_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_games_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
             referencedColumns: ["id"]
           },
         ]

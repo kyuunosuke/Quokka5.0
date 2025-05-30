@@ -6,6 +6,7 @@ import SignUpForm from "./components/auth/SignUpForm";
 import Dashboard from "./components/pages/dashboard";
 import Success from "./components/pages/success";
 import Home from "./components/pages/home";
+import Games from "./components/pages/games";
 import AdminLogin from "./components/admin/AdminLogin";
 import AdminSignUp from "./components/admin/AdminSignUp";
 import AdminForgotPassword from "./components/admin/AdminForgotPassword";
@@ -58,6 +59,7 @@ function AppRoutes() {
           }
         />
         <Route path="/success" element={<Success />} />
+        <Route path="/games" element={<Games />} />
         <Route path="/adminlogin" element={<AdminLogin />} />
         <Route path="/admin/signup" element={<AdminSignUp />} />
         <Route
