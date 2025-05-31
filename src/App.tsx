@@ -34,7 +34,6 @@ function AppRoutes() {
         <Route path="/login" element={<Navigate to="/memberlogin" />} />
         <Route path="/memberlogin" element={<MemberLoginForm />} />
         <Route path="/signup" element={<SignUpForm />} />
-        <Route path="/memberlogin" element={<MemberLoginForm />} />
         <Route
           path="/dashboard"
           element={
