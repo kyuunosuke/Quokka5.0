@@ -26,6 +26,21 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen text="Authenticating..." />;
+  }
+
+  if (!user) {
+    return <Navigate to="/admin/login" />;
+  }
+
+  // Add admin role check here if needed
+  return <>{children}</>;
+}
+
 function AppRoutes() {
   return (
     <>
